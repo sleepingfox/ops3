@@ -16,3 +16,7 @@
 #
 # import sys
 # print(sys.path)
+
+
+a = {1:2}
+a.keys()[0]

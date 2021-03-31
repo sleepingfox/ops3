@@ -47,7 +47,6 @@ urlpatterns = [
 ]
 
 urlpatterns += router.urls
-
 # urlpatterns = [
 #     # url('^servers/',views.Host.as_view(),name="host" ),
 #     # url(r'assets/host/(?P<host>.+/$)', include('assets.urls')),

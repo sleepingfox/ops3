@@ -85,17 +85,38 @@ class UserViewSet(viewsets.GenericViewSet):
 class AssetViewSet(viewsets.ModelViewSet):
     # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    queryset = Asset.objects.all()
 
     serializer_class = AssetSerializer
 
 
-
-
-
     def list(self, request, *args, **kwargs):
-        print(request)
+        print()
+        print(request.query_params)
         print("token")
+        queryset=Asset.objects.all()
+        # key = request.query_params.keys()
+        # print(key)
+        # value = request.query_params[key]
+        # print(value)
+
+        print("-----------")
+        if len(request.query_params)==1:
+            for i in request.query_params:
+
+                if i =="hostname":
+                    queryset =   Asset.objects.filter(hostname__icontains=request.query_params[i])
+                    print(queryset)
+                    print(1111)
+
+                elif i =="ip":
+                    queryset =   Asset.objects.filter(ip__icontains=request.query_params[i])
+
+                elif i =="asset_status":
+                    queryset =   Asset.objects.filter(asset_status__icontains=request.query_params[i])
+
+                elif i =="idc":
+                    queryset =   Asset.objects.filter(idc__icontains=request.query_params[i])
+
 
         #分页
         currentPage = request.query_params.get("currentPage")
@@ -106,13 +127,14 @@ class AssetViewSet(viewsets.ModelViewSet):
         # 排序，返回queryset
         sortBy = request.query_params.get("sortBy")
         order = request.query_params.get("order")
-        queryset = self.get_queryset()
+
+        print(queryset)
+        print(222)
+
         fin_queryset = sortByUtil(sortBy, order,queryset).get_sort_order()
 
-
-
         serializer = AssetSerializer(fin_queryset, many=True)
-
+        print(serializer.data)
 
         pageData = pageUtil(serializer.data,pageSize,currentPage,).pageData()
 

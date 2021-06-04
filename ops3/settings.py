@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,17 +39,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.assets',
-    'apps.user',
+    'apps.account',
+
     'rest_framework',
     'corsheaders',
     'django_filters',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    "drf_yasg",
+
+
 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
     # 跨域配置
     'corsheaders.middleware.CorsMiddleware',
 
@@ -58,7 +64,7 @@ MIDDLEWARE = [
 
     # 'django.middleware.csrf.CsrfViewMiddleware',
 
-    # 'assets.utils.interceptor.InterceptorMiddleware',
+    # 'apps.common.interceptor.interceptor.InterceptorMiddleware',
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -73,8 +79,7 @@ ROOT_URLCONF = 'ops3.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,13 +130,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Shanghai'
+# TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+# USE_TZ = False
 
 ##斜杠设置
 # APPEND_SLASH=False
@@ -146,12 +151,11 @@ REST_FRAMEWORK = {
         # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
         # 'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
         # 'rest_framework.authentication.SessionAuthentication',
-
-        'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-
+'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication'
+        #’rest_framework.authentication.SessionAuthentication’,
+        #’rest_framework.authentication.BasicAuthentication’,
+    ]
 }
 
 
@@ -189,12 +193,161 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
     'Pragma',
+    "access_token",
+    "refresh_token",
 )
 
 
+
+
+
+JWT_AUTH = {
+    #token 有效期
+    # 'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=8),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=2),
+    'JWT_ALLOW_REFRESH': True,
+     #续期有效期（该设置可在24小时内带未失效的token 进行续期）
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(hours=24),
+    # 自定义返回格式，需要手工创建
+    # 'JWT_RESPONSE_PAYLOAD_HANDLER': ‘Users.utils.jwt_response_payload_handler’,
+}
 
 
 #token的过期时间 单位秒
 # TOKEN_CON_TIME = 900
 TOKEN_CON_TIME = 100000
 
+
+JWT_PAYLOAD={
+    # 过期时间
+    # 'exp': datetime.datetime.now()+datetime.timedelta(seconds=2),
+    # 'exp': datetime.datetime.utcnow()+datetime.timedelta(seconds=15),
+    'exp': "",
+    #datetime.datetime(2021, 6, 1, 10, 11, 15, 106515) +1days
+
+    #token的生效时间
+    #fbf
+
+
+
+
+
+    # token的签发者
+    "iss": 'zhouyiming',
+
+    #接收者
+    #aud
+
+    #token开始的时间
+    # "iat": datetime.datetime.utcnow(),
+    "iat": "",
+
+    "data":{
+        "userid":"",
+
+    }
+}
+
+
+
+JWT_REFRESH_PAYLOAD={
+    # 过期时间
+    # 'exp': datetime.datetime.now()+datetime.timedelta(seconds=2),
+    # 'exp': datetime.datetime.utcnow()+datetime.timedelta(seconds=15),
+    'exp': "",
+    #datetime.datetime(2021, 6, 1, 10, 11, 15, 106515) +1days
+
+    #token的生效时间
+    #fbf
+
+
+
+
+
+    # token的签发者
+    "iss": 'zhouyiming123',
+
+    #接收者
+    #aud
+
+    #token开始的时间
+    # "iat": datetime.datetime.utcnow(),
+    "iat": "",
+
+    "data":{
+        "userid":"",
+
+    }
+}
+
+
+
+# JWT_REFRESH_PAYLOAD={
+#     # 过期时间
+#     # 'exp': datetime.datetime.now()+datetime.timedelta(seconds=2),
+#     # 'exp': datetime.datetime.utcnow()+datetime.timedelta(seconds=15),
+#     'exp': "",
+#     #datetime.datetime(2021, 6, 1, 10, 11, 15, 106515) +1days
+#
+#     #token的生效时间
+#     #fbf
+#
+#     # token的签发者
+#     "iss": 'zhouyiming_refresh',
+#
+#     #接收者
+#     #aud
+#
+#     #token开始的时间
+#     # "iat": datetime.datetime.utcnow(),
+#     "iat": "",
+#
+#     "data":{
+#         "userid":"",
+#
+#     }
+# }
+
+
+
+JWT_EXP_days = 10
+JWT_AIT_days = 20
+
+
+JWT_EXP_SEC = 10
+JWT_AIT_SEC = 20
+
+JWT_REFRESH_EXP_SEC = 10
+JWT_REFRESH_AIT_SEC = 20
+
+
+
+
+
+from apps.common.auth import *
+
+JWT_SECRET_PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChjX25bfIRqOGCYp8FJ/Qqu/3b
+ptN++hcU1Msb+8T7pmdE3N7mcLDdN3ZtiOAMvwn9Ml7ZH94YIb4javLi6FCLwfrD
+DSzmAI6uAXLjrNBecMJ99iz+OG1+DX6MlIj3ddzrJEv1/3Xok545gtieSeTKypbU
+TtXWcK+btCmdmwMjIwIDAQAB
+-----END PUBLIC KEY-----"""
+
+
+JWT_SECRET_PRIVATE_KEY = """
+-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQChjX25bfIRqOGCYp8FJ/Qqu/3bptN++hcU1Msb+8T7pmdE3N7m
+cLDdN3ZtiOAMvwn9Ml7ZH94YIb4javLi6FCLwfrDDSzmAI6uAXLjrNBecMJ99iz+
+OG1+DX6MlIj3ddzrJEv1/3Xok545gtieSeTKypbUTtXWcK+btCmdmwMjIwIDAQAB
+AoGAMhPlBATTw6ug88TUXEnNQy3w/BSTfMnTO87Wgv8hSYyEeHEq2y3VdU1K9Zs3
+MFxLoWPqyM07ECntgZcWYUX4KUxMM+8nN6/miegabwGrePNcavmnxOtnmGHoGtox
+z+4y+zgJUxvQWaubjGdCZZRvyKGxEEapYNbtYStRzH+EB0kCQQDKNpONRkQP+9JO
+1JqhrCnBIp/FdM0Cc2LLtJRNOdRs1zP6BnRXVaFHPX0VhKu+HvY0H9UiT8BaauJa
+0Z3a/7InAkEAzIYyGohGPKipSJWzyiytxrSxqw7vE2rHhrAdUsFrJBqnabnXiM42
+Fc99n5xLeiBFTWrpjZw7wv6rwXh2fYIwpQJBAK2moJ+5r8lqH/jCauhbyJ+q9DnF
+TCjGnhkBQjnvZ5TwWhpkYJR/XLio/Tn1bOcf/55Tl9yXUEBVeX00dbMT0hECQCXr
+j6iZsaQXhWN+1hnbFNEtuW9E0pDgEGRpjNZGJE5KXtXcbhjgWujKUrlgKiJXj2He
+O7VUzUPHIiM56YY1uD0CQQCYgcXmi609VUnHl+uaPjHzi4KhD7+4kkeaWIADAKIG
+Tv9R0VasmNCiIxvUOTNgc4gxdzkLXwcDN++bS3qi3Wj7
+-----END RSA PRIVATE KEY-----
+"""

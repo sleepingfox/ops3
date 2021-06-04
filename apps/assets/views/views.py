@@ -1,5 +1,8 @@
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+
 from apps.assets.status_code.status import *
 
 from apps.assets.serializers.serializers import *
@@ -14,57 +17,10 @@ from rest_framework.authtoken.models import Token
 
 from apps.assets.utils.pageUtil import pageUtil
 from apps.assets.utils.sortByUtil import  sortByUtil
+from apps.common.auth.myauth import myauth
 
+from rest_framework_jwt.settings import api_settings
 
-class UserViewSet(viewsets.GenericViewSet):
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-    # def retrieve(self,request):
-    #     print(request)
-    #     print('retrieve')
-    #
-    #     return {"ok"}
-
-    def list(self,request):
-
-        query_set = self.get_queryset()
-
-        serializer = UserSerializer(query_set,many=True)
-        return Response(serializer.data)
-
-
-    # @action(methods=['post'],detail=False)
-    # def login(self,request):
-    #     print("zzzzzzzzzzzzzzzzzzz")
-    #     info_dic = request.data
-    #     username= info_dic.get("username")
-    #     print(username)
-    #     print(info_dic)
-    #     # obj = User.objects.filter(username=username).first()
-    #
-    #     print("obj")
-    #     print(info_dic["password"])
-    #     # print(obj.password)
-    #     # print(info_dic[username])
-    #     user =authenticate(username=username,password=info_dic["password"])
-    #     if user:
-    #
-    #         print(user.id)
-    #         #更新操作，登陆一次生成一个token
-    #         Token.objects.filter(user_id=user.id).delete()
-    #         token = Token.objects.create(user=user)
-    #
-    #         #判断密码是否正确
-    #         return response.Response(data={"message": "登录成功", "status": HTTP_200_OK, "result": {"token":token.key,"user":{"username":user.username}}})
-    #
-    #     return response.Response(data={"message": "登陆失败", "status": HTTP_404_NOT_FOUND, "result": {}})
 
 
 
@@ -87,7 +43,13 @@ class AssetViewSet(viewsets.ModelViewSet):
 
 
     serializer_class = AssetSerializer
+    queryset = Asset.objects.all()
 
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = (JSONWebTokenAuthentication,)
+
+    authentication_classes = [myauth]
+    # permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         print()
@@ -144,33 +106,32 @@ class AssetViewSet(viewsets.ModelViewSet):
 
 
 
-    @action(methods=['get'],detail=False,url_path="assetsdetails")
-    def list_details(self,request,id):
+    def retrieve(self, request, *args, **kwargs):
+
+        obj = self.get_object()
+        print("asset retrieve")
+
+        res_data = self.get_serializer(obj)
+
+        res_data2 = AssetDetailsSerializer(obj.assetdetails)
+        print("res_data2")
+        print(res_data2)
+
+        # 重新整理数据
+        # l1 = [i.verbose_name for i in obj._meta.fields]
+
+        l2 = [i.verbose_name for i in obj.assetdetails._meta.fields]
+
+        fin_data={}
+
+        # for  i in enumerate(res_data.data.keys()):
+        #     fin_data[l1[i[0]]]=res_data.data[i[1]]
 
 
-        #验证token操作
-        # token =request._request.META.get('HTTP_AUTHORIZATION')
-        # print("token")
-        # obj = Token.objects.filter(key=token).first()
-        # if not obj:
-        #     return response.Response(data={"message":"登录已过期","status":HTTP_401_UNAUTHORIZED})
+        for  v in enumerate(res_data2.data.keys()):
+            fin_data[l2[v[0]]]=res_data2.data[v[1]]
 
-
-        query = Asset.objects.filter(pk=id)
-
-        if len(query)!=0:
-            print("getServerDetails")
-            data = query.first().assetdetails
-            print(data)
-            data.is_valid()
-
-            serializer = AssetDetailsSerializer(data)
-            print(serializer.data)
-        # return response.Response(obj)
-            return Response(serializer.data)
-
-
-        return Response({"status":HTTP_404_NOT_FOUND,"message":"找不到对应的id"})
+        return Response(data={"data":fin_data,"status":HTTP_200_OK,"msg":"成功"})
 
 
 
@@ -179,70 +140,101 @@ class AssetViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
 
         kwargs['partial']=True
-
-
-
-
-        return self.update(request, *args, **kwargs)
-
-        # instance = self.update(request,*args,**kwargs)
-
-        # serializer =  self.get_serializer(instance, data=self.request.data)
-        # serializer.
-
+        # serializers = self.get_serializer(data=request.data,partial=True)
+        # print(kwargs.get("pk"))
+        instance = self.get_object()
         # print(instance)
+        print("partial")
+        print(request.data)
 
-        # serializer = self.get_serializer(instance, data=request.data,)
-        # serializer.is_valid(raise_exception=True)
-        #
-        # print(serializer.is_vaild())
-        # serializer.save()
-        # return self.update(request,*args,**kwargs)
-        # self.get_serializer(self.update(request,*args,**kwargs),data = self.request.data).save()
+        serializers = self.get_serializer(instance,data=request.data,partial=True)
+
+        serializers.is_valid()
+        print(serializers.errors)
+        print("-----------")
+        print(serializers.validated_data)
+
+        serializers.save()
+
+        return Response(data={"status":HTTP_201_CREATED,"msg":"成功创建"})
+
+
+    def destroy(self, request, *args, **kwargs):
+
+
+        obj = self.get_object()
+        obj.delete()
+
+        return Response(data={"status":HTTP_204_NO_CONTENT,"msg":'成功删除'})
+
+
+
+
+
+
+
+
+##asset详细信息
+
+
+class AssetDetailsViewSet(viewsets.ModelViewSet):
+
+    serializer_class = AssetDetailsSerializer
+    queryset = AssetDetails.objects.all()
+
+
+
+    def list(self, request, *args, **kwargs):
+
+        #  返回详细的信息
+        obj = AssetDetails.objects.all()
+        print(request.query_params)
 
 
         return Response("ok")
 
 
-    # def update(self, request, pk):
-    #
-    #     print("进行更新操作")
-    #     print("pk")
-    #     print(pk)
-    #     print("request.data")
-    #     print(request.data)
-    #
-    #     old_obj_test = Asset.objects.filter(pk=pk).first()
-    #
-    #     test1 = AssetSerializer(data=request.data)
-    #     test1.is_valid()
-    #     if "unique" in  test1.errors.get("Assetname"):
-    #         print("进行更新")
-    #
-    #
-    #
-    #     # old_obj = AssetSerializer(Asset.objects.filter(pk=pk).first()).data
-    #     # old_obj = AssetSerializer(Asset.objects.filter(pk=pk).first(),data=request.data,partial=True)
-    #     # print("old_data")
-    #     # print(old_obj)
+    def retrieve(self, request, *args, **kwargs):
+
+        obj = self.get_object()
+        res_data = self.get_serializer(obj)
+
+        # 重新整理数据
+        l1 = [i.verbose_name for i in obj._meta.fields]
+
+        fin_data={}
+        for  i in enumerate(res_data.data.keys()):
+            fin_data[l1[i[0]]]=res_data.data[i[1]]
+
+        return Response(data={"data":fin_data,"status":HTTP_200_OK,"msg":"成功"})
+
+
+    # def list(self,request):
     #
     #
-    #     # print(old_obj.is_valid())
-    #     # old_obj.is_valid()
-    #     # old_obj.save()
-    #
-    #     # if request.data == old_obj:
-    #     #     print("无需更改")
-    #     #     return response.Response(data={"msg": "更改成功","status":HTTP_200_OK})
-    #     #
-    #     # Asset.objects.filter(pk=pk).update(**request.data)
+    #     #验证token操作
+    #     # token =request._request.META.get('HTTP_AUTHORIZATION')
+    #     # print("token")
+    #     # obj = Token.objects.filter(key=token).first()
+    #     # if not obj:
+    #     #     return response.Response(data={"message":"登录已过期","status":HTTP_401_UNAUTHORIZED})
     #
     #
-    #     print("===========post")
+    #     query = Asset.objects.filter(pk=id)
+    #
+    #     if len(query)!=0:
+    #         print("getServerDetails")
+    #         data = query.first().assetdetails
+    #         print(data)
+    #         data.is_valid()
+    #
+    #         serializer = AssetDetailsSerializer(data)
+    #         print(serializer.data)
+    #     # return response.Response(obj)
+    #         return Response(serializer.data)
     #
     #
-    #
-    #     return Response(data={"msg": "更改成功", "status": HTTP_200_OK})
+    #     return Response({"status":HTTP_404_NOT_FOUND,"message":"找不到对应的id"})
 
 
 
@@ -254,6 +246,12 @@ class AssetViewSet(viewsets.ModelViewSet):
 
 
 
-
+# from rest_framework_jwt.settings import api_settings
+#
+# jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+# jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+#
+# payload = jwt_payload_handler(user)
+# token = jwt_encode_handler(payload)
 
 

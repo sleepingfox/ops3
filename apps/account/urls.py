@@ -28,28 +28,28 @@ from django.urls import path
 
 
 # from django.urls import path, include
-from apps.assets.views import views
+from apps.account import views
 
-app_name = "assets"
+app_name = "account"
 
 router = routers.DefaultRouter()
-router.register(r'assets', AssetViewSet, 'assets')
-router.register(r'idcs', IdcViewSet, 'idcs')
-router.register(r'cabinets', CabinetViewSet, 'cabinets')
-router.register(r'assetsdetails', AssetDetailsViewSet, 'assetsdetails')
+
+router.register(r'users', UserViewSet, 'users')
 router_urls=router.urls
-print("router_urls")
-print(router_urls)
 
 
 
 
 urlpatterns = [
-    # path('assets/assetsdetails/<int:id>/', views.AssetViewSet.as_view({"get":'list_details'}), name='assetsdetails'),
+    path('login/', views.Login.as_view(), name='login'),
 
 ]
 
 urlpatterns += router.urls
+
+print("account")
+print(urlpatterns)
+
 # urlpatterns = [
 #     # url('^servers/',views.Host.as_view(),name="host" ),
 #     # url(r'assets/host/(?P<host>.+/$)', include('assets.urls')),

@@ -96,33 +96,39 @@ class Asset(models.Model):
 
     def __str__(self):
         return self.hostname
+    #
+    # def __repr__(self):
+    #     return self.hostname
+
 
 
 
 
 class AssetDetails(models.Model):
-    asset = models.OneToOneField(Asset,on_delete=models.CASCADE)
+    asset = models.OneToOneField(Asset, on_delete=models.CASCADE, verbose_name="设备名称", )
     # ip = models.GenericIPAddressField(u"管理IP", max_length=15)
     # account = models.ForeignKey(UserInfo, verbose_name=u"账号信息", on_delete=models.SET_NULL, null=True, blank=True)
     # idc = models.ForeignKey(Idc, verbose_name=u"所在机房", on_delete=models.SET_NULL, null=True, blank=True)
     # Cabinet = models.ForeignKey(Cabinet, verbose_name=u"所在机柜", on_delete=models.SET_NULL, null=True, blank=True)
-    other_ip = models.CharField(u"其它IP", max_length=100, blank=True)
-    asset_no = models.CharField(u"资产编号", max_length=50, blank=True)
+    other_ip = models.CharField( max_length=100, blank=True,verbose_name="其他ip")
+    asset_no = models.CharField( max_length=50, blank=True,verbose_name="待定")
     # asset_type = models.CharField(u"设备类型", choices=ASSET_TYPE, max_length=30, null=True, blank=True)
     # status = models.CharField(u"设备状态", choices=ASSET_STATUS, max_length=30, null=True, blank=True)
 
-    os = models.CharField(u"操作系统", max_length=100, blank=True)
-    vendor = models.CharField(u"设备厂商", max_length=50, blank=True)
-    init_up_time = models.DateField(u'上架时间', auto_now_add=True)
-    up_time = models.DateTimeField(u'修改时间', auto_now=True)
-    cpu_model = models.CharField(u"CPU型号", max_length=100, blank=True)
-    cpu_num = models.CharField(u"CPU数量", max_length=100, blank=True)
-    memory = models.CharField(u"内存大小", max_length=30, blank=True)
-    disk = models.CharField(u"硬盘信息", max_length=255, blank=True)
-    sn = models.CharField(u"SN号 码", max_length=60, blank=True)
-    position = models.CharField(u"所在位置", max_length=100, blank=True)
-    # xxx = models.DateTimeField(u"数据更新时间",blank=True,null=True)
-    memo = models.TextField(u"备注信息", max_length=200, blank=True)
+    os = models.CharField( max_length=100, blank=True,verbose_name="操作系统")
+    vendor = models.CharField( max_length=50, blank=True,verbose_name="设备厂商")
+    init_up_time = models.DateField( auto_now_add=True,verbose_name="上架时间")
+    up_time = models.DateTimeField( auto_now=True,verbose_name="修改时间")
+    cpu_model = models.CharField( max_length=100, blank=True,verbose_name="CPU型号")
+    cpu_num = models.CharField( max_length=100, blank=True,verbose_name="CPU数量")
+    memory = models.CharField(max_length=30, blank=True,verbose_name="内存大小")
+    disk = models.CharField( max_length=255, blank=True,verbose_name="硬盘信息")
+    sn = models.CharField(max_length=60, blank=True,verbose_name="SN号码")
+    position = models.CharField( max_length=100, blank=True,verbose_name="所在位置")
+    memo = models.TextField( max_length=200, blank=True,verbose_name="备注信息")
+
+
+
 
 
 

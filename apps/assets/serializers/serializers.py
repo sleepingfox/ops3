@@ -4,11 +4,7 @@ from apps.assets import models
 from apps.assets.models import AssetDetails, Idc,Cabinet,UserInfo
 from django.contrib.auth.models import User
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # fields = ['username', 'password',"login_method"]
-        fields = "__all__"
+
 
 
 
@@ -50,10 +46,9 @@ class AssetSerializer(serializers.ModelSerializer):
     cabinet = serializers.CharField(source='cabinet.name')
     account = serializers.CharField(source="account.username")
 
-    def create(self, validated_data):
-        print(validated_data)
-        print(validated_data.__dict__)
-        print("mycreate")
+    # def create(self, validated_data):
+    #     print(validated_data)
+    #     print("serializers create")
 
 
     class Meta:
@@ -70,11 +65,23 @@ class AssetSerializer(serializers.ModelSerializer):
         print(instance)
         print("serlializes update")
 
+        print("***********")
 
+        # idc = Idc.objects.filter(name=validated_data["idc"]['name']).first()
+        # print(idc)
+
+        # instance.idc = idc
 
         instance.idc = Idc.objects.filter(name=validated_data["idc"]['name']).first()
         instance.cabinet = Cabinet.objects.filter(name=validated_data["cabinet"]['name']).first()
         instance.account = UserInfo.objects.filter(username=validated_data["account"]['username']).first()
+
+        instance.sshPort = validated_data["sshPort"]
+        instance.asset_status = validated_data["asset_status"]
+        instance.asset_type = validated_data["asset_type"]
+        instance.hostname = validated_data["hostname"]
+        instance.position = validated_data["position"]
+        instance.ip = validated_data["ip"]
 
         # serializer = self(instance, data=validated_data.data)
         #
@@ -83,21 +90,22 @@ class AssetSerializer(serializers.ModelSerializer):
 
         # instance.cabinet = validated_data["cabinet"]['name']
         # instance.account = validated_data["account"]['name']
-
-
-        # instance.save()
+        instance.save()
         # return instance
         return instance
 
 
 class AssetDetailsSerializer(serializers.ModelSerializer):
 
-    # asset = serializers.CharField(source='Asset.Assetname')
+    asset = serializers.CharField(source='asset.hostname')
     # "idc": 1,
     # "Cabinet": 1
     class Meta:
         model = AssetDetails
         fields = '__all__'
+
+
+
 
 '''
 #超链接的形式
